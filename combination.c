@@ -1,12 +1,10 @@
 #include "combination.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
+#include "operaciones.h"
+#include "paralleling.h"
 
 // retorna el número de elementos (en total) dado un ciclo
 Lenght cycles[RECOMENDED_CYCLES];
+// 'cycles' al ser una variable global hay que vigilar su acceso
 Lenght getCycleLenght(int cycle) {
     Lenght l = 0, last, tmp;
 
@@ -35,94 +33,6 @@ int getCycle(Lenght element) {
     cycle++;
 
     return cycle;
-}
-
-char indexToOperation(int index) {
-    char op;
-
-    switch (index) {
-        case 0:
-            op = SUMA;
-            break;
-        case 1:
-            op = RESTA;
-            break;
-        case 2:
-            op = MULTIPLICACION;
-            break;
-        case 3:
-            op = DIVISION;
-            break;
-        case 4:
-            op = FACTORIAL;
-            break;
-        case 5:
-            op = RESTA;
-            break;
-        default:
-            op = NOT_DEFINED;
-    }
-
-    return op;
-}
-
-Element operar(float e1, float e2, char op) {
-    Element result = getDefaultElement();
-
-    switch (op) {
-        case RESTA:
-            e2 *= -1;
-        case SUMA:
-            result.valor = e1 + e2;
-            if ((e1 > 0 && e2 > 0 && result.valor < 0) || (e1 < 0 && e2 < 0 && result.valor > 0)) result.is_valid = false; // overflow?
-            break;
-        case MULTIPLICACION:
-            result.valor = e1 * e2;
-            break;
-        case DIVISION:
-            if (e2 == 0) result.is_valid = false;
-            else result.valor = e1 / e2;
-
-            break;
-        default:
-            result.is_valid = false;
-    }
-
-    return result;
-}
-
-Valor factorial(float val) {
-    Valor result = 1.0f;
-    Valor last = result;
-
-    for (Valor x = 2.0f; x <= val && result != ERROR; x++) {
-        result *= x;
-        if (result/x != last) result = ERROR;
-        last = result;
-    }
-
-    return result;
-}
-
-Element operarSelf(float e1, char op) {
-    Element result = getDefaultElement();
-
-    switch (op) {
-        case RESTA:
-            result.valor = -e1;
-            break;
-        case FACTORIAL:
-            if (ceilf(e1) != e1 || e1 < 0) result.is_valid = false;
-            else {
-                result.valor = factorial(e1);
-                if (result.valor == ERROR) result.is_valid = false;
-            }
-            break;
-        default:
-            result.is_valid = false;
-    }
-
-    return result;
 }
 
 Element getDefaultElement() {
@@ -155,15 +65,10 @@ void notValidElement(Element *r) {
     return;
 }
 
-void removeLast(char **a, char **b) {
-    if (*a != NULL) {
-        free(*a);
-        *a = NULL;
-    }
-
-    if (*b != NULL) {
-        free(*b);
-        *b = NULL;
+void freeAndNull(char **p) {
+    if (*p != NULL) {
+        free(*p);
+        *p = NULL;
     }
 }
 
@@ -193,7 +98,8 @@ void mergeOperations(char **to, char **comb1, char **comb2, char op) {
     }
     else exit(EXIT_FAILURE);
 
-    removeLast(comb1, comb2);
+    freeAndNull(comb1);
+    freeAndNull(comb2);
 
     return;
 }
@@ -229,10 +135,7 @@ void mergeSelfOperations(char **to, char **comb1, char op) {
     }
     else exit(EXIT_FAILURE);
 
-    if (*comb1 != NULL) {
-        free(*comb1);
-        *comb1 = NULL;
-    }
+    freeAndNull(comb1);
 
     return;
 }
@@ -240,7 +143,7 @@ void mergeSelfOperations(char **to, char **comb1, char op) {
 // dado un número, retorna la operación correspondiente
 Element getOperation(Lenght element) {
     int current_cycle;
-    Element result;
+    Element result = getDefaultElement();
     Lenght cycle_number, first_element, element_number, operation_number;
     Lenght all, tmp;
 
@@ -269,41 +172,58 @@ Element getOperation(Lenght element) {
 
         if (operation_number >= OPERATIONS) {
             if (e1.is_valid) {
-                result = operarSelf(e1.valor, operation);
+                operarSelf(&result, e1.valor, operation);
 
                 // numbers
                 result.numbers = e1.numbers;
                 if (USE_NUMBER && result.numbers > N_NUMBER) result.is_valid = false;
 
                 if (result.is_valid) mergeSelfOperations(&result.operation, &e1.operation, operation);
-                else notValidElement(&result);
+                else {
+                    freeAndNull(&e1.operation);
+                    notValidElement(&result);
+                }
             }
             else {
-                // remove e1
-                if (e1.operation != NULL) {
-                    free(e1.operation);
-                    e1.operation = NULL;
-                }
+                freeAndNull(&e1.operation);
                 notValidElement(&result);
             }
         }
         else {
             if (e1.is_valid && e2.is_valid) {
-                result = operar(e1.valor, e2.valor, operation);
+                operar(&result, e1.valor, e2.valor, operation);
 
                 // numbers
                 result.numbers = e1.numbers + e2.numbers;
                 if (USE_NUMBER && result.numbers > N_NUMBER) result.is_valid = false;
 
                 if (result.is_valid) mergeOperations(&result.operation, &e1.operation, &e2.operation, operation);
-                else notValidElement(&result);
+                else {
+                    freeAndNull(&e1.operation);
+                    freeAndNull(&e2.operation);
+                    notValidElement(&result);
+                }
             } else {
-                removeLast(&e1.operation, &e2.operation);
+                freeAndNull(&e1.operation);
+                freeAndNull(&e2.operation);
                 notValidElement(&result);
             }
         }
     }
-    else result = getDefaultElement();
 
     return result;
+}
+
+// in: solucion
+// out: valid?
+bool checkValid(Element solution) {
+    bool found;
+
+    if (solution.is_valid) {
+        found = (solution.valor == SOLUTION && (solution.numbers == N_NUMBER || !USE_NUMBER));
+        if (found) printf("[*] FOUND: %s\n", solution.operation);
+        if (!STOP_ON_FOUND) found = false;
+    } else found = false;
+
+    return found;
 }
