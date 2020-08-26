@@ -3,12 +3,13 @@
 
 #include "combination.h"
 
-#define OPERATIONS 4 // + - * /
+#define OPERATIONS 5 // + - * /
 #define SINGLE_OPERATIONS 2 // ! -self
 #define SUMA '+'
 #define RESTA '-'
 #define MULTIPLICACION '*'
 #define DIVISION '/'
+#define EXPONENT '^'
 #define FACTORIAL '!'
 #define NOT_DEFINED '?'
 #define ERROR -1

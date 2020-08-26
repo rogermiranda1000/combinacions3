@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define RECOMENDED_CYCLES 7
+#define RECOMENDED_CYCLES 6
 
 #define NUMBER 3
 #define STR_NUMBER "3"
