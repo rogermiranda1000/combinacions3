@@ -4,7 +4,7 @@
 #include "combination.h"
 #include <stdbool.h>
 
-#define THREADS 32//8
+#define THREADS 1//32//8
 #define OPERATIONS_PER_THREAD 250000 // cada thread obtendrá 'OPERATIONS_PER_THREAD' valores
 
 #if (THREADS > 1)

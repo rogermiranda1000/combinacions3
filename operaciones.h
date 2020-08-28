@@ -7,12 +7,13 @@
 #define SUMA '+'
 #define MULTIPLICACION '*'
 #define NON_COMMUTATIVE_OPERATIONS 3
-#define RESTA '-'
 #define DIVISION '/'
 #define EXPONENT '^'
-#define SINGLE_OPERATIONS 2
-// RESTA
+#define RESTA '-'
+#define SINGLE_OPERATIONS 3
 #define FACTORIAL '!'
+#define SAME 's'
+// RESTA
 
 #define NOT_DEFINED '?'
 

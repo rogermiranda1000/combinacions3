@@ -204,13 +204,44 @@ Element getOperation(Lenght element) {
 
         if (self) {
             if (e1.is_valid) {
-                operarSelf(&result, e1.valor, operation);
+                if (operation == SAME) {
+                    // 'n' to 'nn'
 
-                // numbers
-                result.numbers = e1.numbers;
-                if (USE_NUMBER && result.numbers > N_NUMBER) result.is_valid = false;
+                    // it doesn't work with >10 numbers
+                    if (NUMBER > 9) result.is_valid = false;
+                    else {
+                        operar(&result, e1.valor, NUMBER, operation);
 
-                if (result.is_valid) mergeSelfOperations(&result.operation, &e1.operation, operation);
+                        result.numbers = e1.numbers + 1;
+                        if (USE_NUMBER && result.numbers > N_NUMBER) result.is_valid = false;
+
+                        if (result.is_valid) {
+                            if (result.operation != NULL) {
+                                free(result.operation);
+                                result.operation = NULL;
+                            }
+
+                            result.operation = (char*) malloc(sizeof(char) * (strlen(e1.operation) + 2)); // size of first comb; one element (1) + \0 (1)
+
+                            if (result.operation != NULL) {
+                                strcpy(result.operation, e1.operation);
+                                strcat(result.operation, STR_NUMBER);
+                            }
+                            else exit(EXIT_FAILURE);
+
+                            freeAndNull(&e1.operation);
+                        }
+                    }
+                }
+                else {
+                    operarSelf(&result, e1.valor, operation);
+
+                    // numbers
+                    result.numbers = e1.numbers;
+                    if (USE_NUMBER && result.numbers > N_NUMBER) result.is_valid = false;
+
+                    if (result.is_valid) mergeSelfOperations(&result.operation, &e1.operation, operation);
+                }
             }
             else result.is_valid = false;
         }

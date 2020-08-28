@@ -13,21 +13,24 @@ char indexToOperation(int index) {
             break;
         case OPERATIONS:
         case OPERATIONS+1:
-            op = RESTA;
+            op = DIVISION;
             break;
         case OPERATIONS+2:
         case OPERATIONS+3:
-            op = DIVISION;
+            op = EXPONENT;
             break;
         case OPERATIONS+4:
         case OPERATIONS+5:
-            op = EXPONENT;
-            break;
-        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2:
             op = RESTA;
             break;
-        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2 + 1:
+        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2:
             op = FACTORIAL;
+            break;
+        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2 + 1:
+            op = SAME;
+            break;
+        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2 + 2:
+            op = RESTA;
             break;
         default:
             op = NOT_DEFINED;
@@ -112,6 +115,9 @@ void operar(Element *result, Valor e1, Valor e2, char op) {
         case EXPONENT:
             result->valor = elevar(&result->is_valid, e1, e2);
             //result->valor = (Valor)pow((double) e1, (double) e2);
+            break;
+        case SAME:
+            result->valor = e1*10 + e2;
             break;
         default:
             result->is_valid = false;

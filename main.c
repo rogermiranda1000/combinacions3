@@ -31,7 +31,9 @@ int main() {
 
     // pre-generate cycles (do it if multithreading)
     for (int cycle = 0; cycle <= RECOMENDED_CYCLES; cycle++) printf("Ciclo %d: %llu\n", cycle, getCycleLenght(cycle));
-    //printf("[*] %llu\n", (482972-getCycleLenght(getCycle(482972)-1))*(getCycleLenght(getCycle(482972)-1))*(2+3*2)+2);
+
+    // finding 2019:
+    //printf("[*] %llu\n", getCycleLenght(getCycle(425139)) + (425139-getCycleLenght(getCycle(425139)-1))*(getCycleLenght(getCycle(425139)))*(2+3*2)+3);
 
     // calculations
     do {
