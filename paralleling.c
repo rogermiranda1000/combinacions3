@@ -52,6 +52,10 @@ bool paralel(Lenght *current) {
             else checkValid(retorno[x]);
 
             if (retorno[x].operation == NULL) exit(EXIT_FAILURE);
+            #if (VERBOSE)
+                if (retorno[x].is_valid) printf("Resultado del elemento %llu: %s   [%.2f]\n", x, retorno[x].operation, retorno[x].valor);
+                //else printf("Elemento %llu no válido.\n", x);
+            #endif
             free(retorno[x].operation);
         }
         free(retorno);

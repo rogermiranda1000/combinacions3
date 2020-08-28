@@ -4,9 +4,24 @@
 #include "combination.h"
 #include "paralleling.h"
 #include <time.h>
+#include <unistd.h> // sleep
 
-#define VERBOSE 0
-#define INIT_NUMBER 0 // starting number (~7987000000 sin exponente; ~X con exponente)
+#define DELAY 0
+#define SAVE 0
+
+void saveCurrent(Lenght c) {
+    FILE *f = NULL;
+
+    f = fopen("last.txt", "w");
+
+    if (f != NULL) {
+        fprintf(f, "%llu", c);
+
+        fclose(f);
+    }
+
+    return;
+}
 
 int main() {
     bool found;
@@ -16,6 +31,7 @@ int main() {
 
     // pre-generate cycles (do it if multithreading)
     for (int cycle = 0; cycle <= RECOMENDED_CYCLES; cycle++) printf("Ciclo %d: %llu\n", cycle, getCycleLenght(cycle));
+    //printf("[*] %llu\n", (482972-getCycleLenght(getCycle(482972)-1))*(getCycleLenght(getCycle(482972)-1))*(2+3*2)+2);
 
     // calculations
     do {
@@ -23,14 +39,23 @@ int main() {
             // paralleling
             found = paralel(&x);
             printf("[v] %llu\n", x);
+            #if SAVE
+                saveCurrent(x);
+            #endif
         #else
             solution = getOperation(x);
 
             #if (VERBOSE)
+                if (DELAY) sleep(1);
                 if (solution.operation != NULL && solution.is_valid) printf("Resultado del elemento %llu: %s   [%.2f]\n", x, solution.operation, solution.valor);
-                else printf("Elemento %llu no válido.\n", x);
+                //else printf("Elemento %llu no válido.\n", x);
             #endif
-            if (x % 250000 == 0) printf("[v] %llu\n", x);
+            if (x % 250000 == 0) {
+                printf("[v] %llu\n", x);
+                #if SAVE
+                    saveCurrent(x);
+                #endif
+            }
 
             found = checkValid(solution);
 

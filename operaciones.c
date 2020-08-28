@@ -9,22 +9,25 @@ char indexToOperation(int index) {
             op = SUMA;
             break;
         case 1:
-            op = RESTA;
-            break;
-        case 2:
             op = MULTIPLICACION;
             break;
-        case 3:
+        case OPERATIONS:
+        case OPERATIONS+1:
+            op = RESTA;
+            break;
+        case OPERATIONS+2:
+        case OPERATIONS+3:
             op = DIVISION;
             break;
-        case 4:
+        case OPERATIONS+4:
+        case OPERATIONS+5:
             op = EXPONENT;
             break;
-        case 5:
-            op = FACTORIAL;
-            break;
-        case 6:
+        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2:
             op = RESTA;
+            break;
+        case OPERATIONS + NON_COMMUTATIVE_OPERATIONS*2 + 1:
+            op = FACTORIAL;
             break;
         default:
             op = NOT_DEFINED;
@@ -33,28 +36,61 @@ char indexToOperation(int index) {
     return op;
 }
 
-Valor factorial(Valor val) {
-    Valor result = 1.0f;
-    Valor last = result;
+Valor factorial(bool *valid, Valor val) {
+    Valor result, last;
 
-    for (Valor x = 2.0f; x <= val && result != ERROR; x++) {
-        result *= x;
-        if (result/x != last) result = ERROR;
-        last = result;
+    if (val == 0) result = 1;
+    else result = val;
+    last = result;
+
+    // pls don't burn my CPU
+    if (result > FACTORIAL_MAX) *valid = false;
+    else {
+        for (Valor x = val - 1; x > 1.0f && *valid; x--) {
+            result *= x;
+            if (result / x != last) *valid = false;
+            last = result;
+        }
     }
 
     return result;
 }
 
-/*Valor elevar(Valor b, Valor e) {
-    Valor retorno = b;
+Valor elevar(bool *valid, Valor b, Valor e) {
+    Valor retorno, last;
 
-    for (Valor x = 0; x < e; x++) {
+    if (e == 0) {
+        if (b == 0) *valid = false; // indeterminacion
+        else retorno = 1;
+    }
+    else retorno = b;
+    last = retorno;
 
+    if (ceilf(e) != e) *valid = false;
+    else {
+        // exponente negativo?
+        if (e < 0) {
+            if (b == 0) *valid = false;
+            else {
+                e *= -1;
+                b = 1/b;
+            }
+        }
+
+        if (b == 1); // retorno = 1; but it's already done
+        // pls don't burn my CPU
+        else if (e > EXPONENT_MAX || b > BASE_MAX) *valid = false;
+        else {
+            for (Valor x = 2; x <= e && *valid; x++) {
+                retorno *= b;
+                if (retorno / b != last) *valid = false;
+                last = retorno;
+            }
+        }
     }
 
-
-}*/
+    return retorno;
+}
 
 void operar(Element *result, Valor e1, Valor e2, char op) {
     switch (op) {
@@ -64,15 +100,18 @@ void operar(Element *result, Valor e1, Valor e2, char op) {
             result->valor = e1 + e2;
             if ((e1 > 0 && e2 > 0 && result->valor < 0) || (e1 < 0 && e2 < 0 && result->valor > 0)) result->is_valid = false; // overflow?
             break;
-        case MULTIPLICACION:
-            result->valor = e1 * e2;
-            break;
         case DIVISION:
             if (e2 == 0) result->is_valid = false;
-            else result->valor = e1 / e2;
+            else e2 = 1/e2;
+        case MULTIPLICACION:
+            if (result->is_valid) {
+                result->valor = e1 * e2;
+                if (result->valor / e1 != e2) result->is_valid = false;
+            }
             break;
         case EXPONENT:
-            result->valor = (Valor)pow((double) e1, (double) e2);
+            result->valor = elevar(&result->is_valid, e1, e2);
+            //result->valor = (Valor)pow((double) e1, (double) e2);
             break;
         default:
             result->is_valid = false;
@@ -88,10 +127,7 @@ void operarSelf(Element *result, Valor e1, char op) {
             break;
         case FACTORIAL:
             if (ceilf(e1) != e1 || e1 < 0) result->is_valid = false;
-            else {
-                result->valor = factorial(e1);
-                if (result->valor == ERROR) result->is_valid = false;
-            }
+            else result->valor = factorial(&result->is_valid, e1);
             break;
         default:
             result->is_valid = false;

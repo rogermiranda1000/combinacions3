@@ -8,14 +8,17 @@
 #include <stdio.h>
 
 #define RECOMENDED_CYCLES 6
+#define VERBOSE 0
+
+#define INIT_NUMBER 0
 
 #define NUMBER 3
 #define STR_NUMBER "3"
 #define LEN_NUMBER 1 // NUMBER's characters
 
 #define SOLUTION 2019
-#define USE_NUMBER 1
-#define N_NUMBER 7 // using N_NUMBER number of NUMBER, get SOLUTION
+#define USE_NUMBER 0
+#define N_NUMBER 7 // "using N_NUMBER number of NUMBER, get SOLUTION"
 #define STOP_ON_FOUND 1
 
 typedef float Valor;
@@ -31,6 +34,7 @@ Lenght getCycleLenght(int cycle);
 int getCycle(Lenght element);
 Element getDefaultElement();
 void notValidElement(Element *r);
+int getOperationNumber(bool *self, bool *inverse, Lenght element_number, Lenght all);
 void mergeOperations(char **to, char **comb1, char **comb2, char op);
 Element getOperation(Lenght element);
 void freeAndNull(char **p);
